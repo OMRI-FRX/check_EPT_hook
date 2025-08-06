@@ -1,0 +1,87 @@
+;
+; check_EPT_hook.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=check_EPT_hook.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockDown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+check_EPT_hook_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+check_EPT_hook.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%check_EPT_hook.DeviceDesc%=check_EPT_hook_Device, Root\check_EPT_hook ; TODO: edit hw-id
+
+[check_EPT_hook_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+check_EPT_hook.sys
+
+;-------------- Service installation
+[check_EPT_hook_Device.NT.Services]
+AddService = check_EPT_hook,%SPSVCINST_ASSOCSERVICE%, check_EPT_hook_Service_Inst
+
+; -------------- check_EPT_hook driver install sections
+[check_EPT_hook_Service_Inst]
+DisplayName    = %check_EPT_hook.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\check_EPT_hook.sys
+
+;
+;--- check_EPT_hook_Device Coinstaller installation ------
+;
+
+[check_EPT_hook_Device.NT.CoInstallers]
+AddReg=check_EPT_hook_Device_CoInstaller_AddReg
+CopyFiles=check_EPT_hook_Device_CoInstaller_CopyFiles
+
+[check_EPT_hook_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[check_EPT_hook_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[check_EPT_hook_Device.NT.Wdf]
+KmdfService =  check_EPT_hook, check_EPT_hook_wdfsect
+[check_EPT_hook_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "check_EPT_hook Installation Disk"
+check_EPT_hook.DeviceDesc = "check_EPT_hook Device"
+check_EPT_hook.SVCDESC = "check_EPT_hook Service"
